@@ -22,46 +22,45 @@
             --border: #242428;
             --border-bright: #38383d;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
             font-family: 'Noto Sans TC', -apple-system, sans-serif;
-            background-color: var(--bg);
+            background: var(--bg);
             background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,0,28,0.08) 0%, transparent 70%);
             color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 16px;
         }
 
+        /* ── 容器 ── */
         .container {
             background: var(--card-bg);
-            padding: 32px;
-            border-radius: 28px;
             border: 1px solid var(--border);
+            border-radius: 24px;
             box-shadow: 0 0 80px rgba(232,0,28,0.1), 0 40px 80px rgba(0,0,0,0.6);
-            width: 100%;
-            max-width: 520px;
+            width: 100%; max-width: 480px;
+            padding: 28px 24px;
+        }
+        @media (min-width: 700px) {
+            .container { max-width: 680px; padding: 32px; }
+        }
+        @media (min-width: 1100px) {
+            .container { max-width: 1180px; padding: 40px 48px; }
         }
 
-        @media (min-width: 900px) {
-            .container { max-width: 1020px; padding: 44px; }
-            .game-layout { display: flex; flex-direction: row; align-items: flex-start; gap: 44px; }
-            .left-panel { flex: 1; }
-            .right-panel { flex: 1.3; display: flex; flex-direction: column; }
-        }
-
+        /* ── 標題 ── */
         .app-title {
-            font-size: 1.6rem; font-weight: 900; color: var(--accent);
-            text-align: center; letter-spacing: 2px; margin-bottom: 28px;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            font-weight: 900; color: var(--accent);
+            text-align: center; letter-spacing: 3px;
+            margin-bottom: 24px;
             text-shadow: 0 0 30px var(--accent-glow);
         }
 
-        #loading { text-align: center; padding: 40px 20px; color: var(--text-mid); }
+        /* ── Loading ── */
+        #loading { text-align: center; padding: 40px 0; color: var(--text-mid); }
         .loading-dot {
             display: inline-block; width: 8px; height: 8px;
             background: var(--accent); border-radius: 50%; margin: 0 3px;
@@ -70,40 +69,73 @@
         .loading-dot:nth-child(2) { animation-delay: 0.2s; }
         .loading-dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
-        .error-msg { color: #ff4455; font-size: 0.95rem; margin-top: 12px; line-height: 1.6; }
+        .error-msg { color: #ff4455; font-size: 0.95rem; margin-top: 12px; line-height: 1.7; }
 
-        .setup-desc { color: var(--text-mid); font-size: 1rem; margin-bottom: 20px; text-align: center; }
-        .setup-box { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; align-items: center; }
-        .input-group { display: flex; align-items: center; gap: 14px; font-size: 1.1rem; color: var(--text-mid); }
+        /* ── Setup ── */
+        .setup-desc { color: var(--text-mid); text-align: center; margin-bottom: 20px; }
+        .setup-box { display: flex; flex-direction: column; gap: 16px; align-items: center; margin: 20px 0; }
+        .input-group { display: flex; align-items: center; gap: 14px; font-size: 1.05rem; color: var(--text-mid); }
         input[type="number"] {
             background: var(--input-bg); border: 1px solid var(--border-bright);
-            color: var(--text); padding: 14px; border-radius: 10px;
+            color: var(--text); padding: 13px; border-radius: 10px;
             width: 100px; text-align: center; font-size: 1.3rem; font-weight: 700;
             font-family: inherit; outline: none; transition: border-color 0.2s;
         }
         input[type="number"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-        .db-info { color: var(--text-sub); font-size: 0.88rem; text-align: center; line-height: 1.8; }
+        .db-info { color: var(--text-sub); font-size: 0.85rem; text-align: center; line-height: 1.9; }
         .db-info span { color: var(--text-mid); font-weight: 700; }
+        .btn-start {
+            display: block; width: 100%; padding: 18px; margin-top: 20px;
+            background: var(--accent); color: #fff; border: none; border-radius: 14px;
+            font-size: 1.1rem; font-weight: 900; cursor: pointer; font-family: inherit;
+            box-shadow: 0 4px 24px var(--accent-glow);
+            transition: filter 0.15s, transform 0.1s; letter-spacing: 1px;
+        }
+        .btn-start:hover { filter: brightness(1.1); }
+        .btn-start:active { transform: scale(0.98); }
 
-        #qrcodeLink {
-            text-decoration: none; display: block;
-            width: fit-content; margin: 0 auto; transition: transform 0.2s;
+        /* ══════════════════════════
+           遊戲區 RWD 佈局
+           手機: 單欄
+           平板(700px+): 左右兩欄
+           桌機(1100px+): 三欄
+        ══════════════════════════ */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-areas:
+                "player"
+                "answer"
+                "control";
+            gap: 16px;
         }
-        #qrcodeLink:hover { transform: scale(1.02); }
-        #qrcode {
-            background: white; padding: 14px; border-radius: 18px;
-            width: 260px; height: 260px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.6); margin: 0 auto;
+        @media (min-width: 700px) {
+            .game-layout {
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas:
+                    "player answer"
+                    "control control";
+                gap: 20px;
+            }
         }
-        #qrcode img { max-width: 100%; height: auto !important; }
-        .click-hint { color: var(--text-sub); font-size: 0.82rem; margin-top: 12px; text-align: center; letter-spacing: 0.5px; }
+        @media (min-width: 1100px) {
+            .game-layout {
+                grid-template-columns: 1.4fr 1fr 1fr;
+                grid-template-areas: "player answer control";
+                gap: 28px;
+                align-items: start;
+            }
+        }
+
+        .panel-player  { grid-area: player; }
+        .panel-answer  { grid-area: answer; display: flex; flex-direction: column; }
+        .panel-control { grid-area: control; display: flex; flex-direction: column; gap: 12px; }
 
         /* ── YouTube 播放器 ── */
         .player-wrap {
             position: relative; width: 100%; padding-top: 56.25%;
-            border-radius: 18px; overflow: hidden; background: #000;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            border-radius: 16px; overflow: hidden; background: #000;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.7);
         }
         .player-wrap iframe {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
@@ -112,17 +144,66 @@
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            gap: 12px; color: var(--text-sub); font-size: 0.9rem;
+            gap: 10px; color: var(--text-sub); font-size: 0.9rem;
         }
-        .player-placeholder .play-icon { font-size: 3rem; opacity: 0.3; }
+        .player-placeholder .play-icon { font-size: 2.5rem; opacity: 0.25; }
 
+        /* ── QR Code ── */
+        .qr-section {
+            margin-top: 14px;
+            display: none;
+            flex-direction: column; align-items: center; gap: 8px;
+        }
+        .qr-section.visible { display: flex; }
+        #qrcodeLink { text-decoration: none; display: block; transition: transform 0.2s; }
+        #qrcodeLink:hover { transform: scale(1.02); }
+        #qrcode {
+            background: white; padding: 10px; border-radius: 14px;
+            width: 120px; height: 120px;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+        #qrcode img { max-width: 100%; height: auto !important; }
+        .qr-hint { color: var(--text-sub); font-size: 0.75rem; text-align: center; }
+
+        @media (min-width: 700px) {
+            .qr-section { flex-direction: row; justify-content: center; }
+            #qrcode { width: 100px; height: 100px; }
+        }
+        @media (min-width: 1100px) {
+            .qr-section { flex-direction: column; }
+            #qrcode { width: 130px; height: 130px; }
+        }
+
+        /* ── 按鈕群組（播放器下方） ── */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px; margin-top: 14px;
+        }
+        .btn-primary {
+            padding: 14px 8px; border: none; border-radius: 12px;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit;
+            transition: transform 0.1s, filter 0.15s;
+            white-space: nowrap; text-align: center;
+        }
+        .btn-primary:active { transform: scale(0.96); }
+        .btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
+        .btn-prev { background: var(--panel-bg); color: var(--text-mid); border: 1px solid var(--border-bright); }
+        .btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-next { background: var(--text); color: #000; }
+        .btn-reveal { background: var(--accent); color: #fff; box-shadow: 0 4px 16px var(--accent-glow); }
+
+        /* ── 答案卡 ── */
         .info-box {
-            min-height: 150px; background: var(--panel-bg);
-            border-radius: 18px; padding: 28px 24px;
+            flex: 1;
+            background: var(--panel-bg); border-radius: 16px;
+            padding: 24px 20px;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             border: 1px solid var(--border);
-            position: relative; overflow: hidden; margin-bottom: 14px;
+            position: relative; overflow: hidden;
+            min-height: 160px;
         }
         .info-box::before {
             content: ''; position: absolute;
@@ -138,98 +219,67 @@
             display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;
         }
         .revealed .hidden-info { filter: blur(0); opacity: 1; }
-        .song-title { font-size: 1.9rem; font-weight: 900; color: var(--text); line-height: 1.2; text-align: center; }
-        .artist { font-size: 1.3rem; color: var(--accent); font-weight: 700; text-align: center; }
+        .song-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--text); line-height: 1.2; text-align: center; }
+        .artist { font-size: clamp(1rem, 2vw, 1.3rem); color: var(--accent); font-weight: 700; text-align: center; }
         .year {
-            font-size: 0.9rem; color: var(--text-mid);
+            font-size: 0.88rem; color: var(--text-mid);
             background: #2a2a2e; padding: 4px 14px; border-radius: 20px;
             margin-top: 4px; border: 1px solid var(--border-bright);
         }
 
+        /* ── 控制台 ── */
         .control-panel {
             background: #111114; padding: 14px;
-            border-radius: 14px; border: 1px solid var(--border); margin-bottom: 14px;
+            border-radius: 14px; border: 1px solid var(--border);
         }
         .search-group { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         #searchSong {
-            flex: 1; padding: 11px 14px;
+            flex: 1; padding: 10px 14px;
             background: var(--input-bg); border: 1px solid var(--border-bright);
-            color: var(--text); border-radius: 8px; font-size: 0.95rem;
+            color: var(--text); border-radius: 8px; font-size: 0.9rem;
             font-family: inherit; outline: none; transition: border-color 0.2s;
         }
         #searchSong:focus { border-color: var(--accent); }
         #songSelect {
-            width: 100%; padding: 11px 14px;
+            width: 100%; padding: 10px 14px;
             background: var(--input-bg); color: var(--text);
             border: 1px solid var(--border-bright); border-radius: 8px;
-            font-size: 0.95rem; font-family: inherit; outline: none; cursor: pointer;
+            font-size: 0.9rem; font-family: inherit; outline: none; cursor: pointer;
         }
 
-        .btn-group { display: flex; gap: 12px; margin-top: 14px; }
-        .btn-primary {
-            flex: 1; padding: 16px; border: none; border-radius: 14px;
-            font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
-            transition: transform 0.1s, filter 0.15s, box-shadow 0.15s;
-        }
-        .btn-primary:active { transform: scale(0.96); }
-        .btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
-        .btn-next { background: var(--text); color: #000; }
-        .btn-prev { background: var(--panel-bg); color: var(--text-mid); border: 1px solid var(--border-bright); }
-        .btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn-reveal { background: var(--accent); color: #fff; box-shadow: 0 4px 20px var(--accent-glow); }
-        .btn-start {
-            display: block; width: 100%; padding: 18px; margin-top: 20px;
-            background: var(--accent); color: #fff; border: none; border-radius: 14px;
-            font-size: 1.1rem; font-weight: 900; cursor: pointer; font-family: inherit;
-            box-shadow: 0 4px 24px var(--accent-glow);
-            transition: filter 0.15s, transform 0.1s; letter-spacing: 1px;
-        }
-        .btn-start:hover { filter: brightness(1.1); }
-        .btn-start:active { transform: scale(0.98); }
-
+        /* ── 狀態列 ── */
         .status-bar {
             display: flex; align-items: center; justify-content: space-between;
-            margin-top: 14px; padding: 10px 14px;
+            padding: 10px 14px;
             background: #111114; border-radius: 10px; border: 1px solid var(--border);
-            font-size: 0.88rem; color: var(--text-sub);
+            font-size: 0.85rem; color: var(--text-sub);
         }
-        .reset-link { color: var(--text-sub); text-decoration: none; font-size: 0.85rem; transition: color 0.15s; }
+        .reset-link { color: var(--text-sub); text-decoration: none; transition: color 0.15s; }
         .reset-link:hover { color: var(--text-mid); }
 
+        /* ── 結束畫面 ── */
         #endScreen { display: none; text-align: center; padding: 20px 0; }
         .end-trophy { font-size: 4rem; margin-bottom: 16px; display: block; }
-        .end-title { font-size: 1.8rem; font-weight: 900; color: var(--text); margin-bottom: 8px; }
-        .end-subtitle { color: var(--text-sub); font-size: 1rem; margin-bottom: 32px; }
+        .end-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
+        .end-subtitle { color: var(--text-sub); margin-bottom: 32px; }
         .end-actions { display: flex; gap: 12px; }
-        .btn-end-action {
+        .btn-end {
             flex: 1; padding: 16px; border-radius: 14px;
             font-size: 0.95rem; font-weight: 700; cursor: pointer;
             font-family: inherit; border: 1px solid var(--border-bright); transition: all 0.15s;
         }
-        .btn-end-action:active { transform: scale(0.97); }
+        .btn-end:active { transform: scale(0.97); }
         .btn-replay { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 20px var(--accent-glow); }
         .btn-replay:hover { filter: brightness(1.1); }
         .btn-reset-end { background: transparent; color: var(--text-mid); }
         .btn-reset-end:hover { background: var(--panel-bg); color: var(--text); }
-
-        @media (max-width: 480px) {
-            .container { padding: 20px; border-radius: 20px; }
-            .song-title { font-size: 1.5rem; }
-            .btn-group { flex-direction: column; }
-        }
-
-        .desktop-btns { display: none; }
-        .mobile-btns { display: flex; }
-        @media (min-width: 900px) {
-            .desktop-btns { display: flex; }
-            .mobile-btns { display: none; }
-        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1 class="app-title">🎵 華語金曲猜歌王 🎵</h1>
 
+    <!-- Loading -->
     <div id="loading">
         正在讀取雲端題庫
         <span class="loading-dot"></span>
@@ -237,6 +287,7 @@
         <span class="loading-dot"></span>
     </div>
 
+    <!-- Setup -->
     <div id="setupArea" style="display:none;">
         <p class="setup-desc">請選擇出題年份範圍</p>
         <div class="setup-box">
@@ -253,23 +304,33 @@
         <button class="btn-start" onclick="startGame()">🚀 開始遊戲</button>
     </div>
 
+    <!-- Game -->
     <div id="gameArea" style="display:none;">
         <div class="game-layout">
-            <div class="left-panel">
+
+            <!-- 左欄：播放器 + QR + 按鈕 -->
+            <div class="panel-player">
                 <div class="player-wrap" id="playerWrap">
                     <div class="player-placeholder" id="playerPlaceholder">
                         <span class="play-icon">▶️</span>
                         <span>等待出題...</span>
                     </div>
                 </div>
-                <div class="btn-group desktop-btns" style="margin-top:20px;">
-                    <button class="btn-primary btn-prev" onclick="prevSong()">⬅️ 上一首</button>
+                <div class="qr-section">
+                    <a id="qrcodeLink" href="#" target="_blank">
+                        <div id="qrcode"></div>
+                    </a>
+                    <span class="qr-hint">掃描或點擊播放</span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary btn-prev" onclick="prevSong()">⬅ 上一首</button>
                     <button class="btn-primary btn-next" onclick="nextSongRandom()">🎲 下一題</button>
                     <button class="btn-primary btn-reveal" onclick="reveal()">👀 看答案</button>
                 </div>
             </div>
 
-            <div class="right-panel">
+            <!-- 中欄：答案卡 -->
+            <div class="panel-answer">
                 <div class="info-box" id="infoBox">
                     <div class="hidden-info">
                         <div class="song-title" id="title">歌名</div>
@@ -277,38 +338,36 @@
                         <div class="year" id="year">????</div>
                     </div>
                 </div>
+            </div>
 
+            <!-- 右欄：控制台 + 狀態 -->
+            <div class="panel-control">
                 <div class="control-panel">
                     <div class="search-group">
-                        <span style="font-size:1.3rem;">🔍</span>
+                        <span style="font-size:1.2rem;">🔍</span>
                         <input type="text" id="searchSong" placeholder="搜尋歌名、歌手或年份..." oninput="filterSongList()">
                     </div>
                     <select id="songSelect" onchange="playSelectedSong()">
                         <option value="">快速選歌...</option>
                     </select>
                 </div>
-
-                <div class="btn-group mobile-btns">
-                    <button class="btn-primary btn-prev" onclick="prevSong()">⬅️ 上一首</button>
-                    <button class="btn-primary btn-next" onclick="nextSongRandom()">🎲 下一題</button>
-                    <button class="btn-primary btn-reveal" onclick="reveal()">👀 看答案</button>
-                </div>
-
                 <div class="status-bar">
-                    <span>剩餘題目：<strong id="remaining" style="color:var(--text-mid)">0</strong> 首</span>
+                    <span>剩餘：<strong id="remaining" style="color:var(--text-mid)">0</strong> 首</span>
                     <a href="#" onclick="resetToSetup(); return false;" class="reset-link">⚙️ 重設</a>
                 </div>
             </div>
+
         </div>
     </div>
 
+    <!-- End -->
     <div id="endScreen">
         <span class="end-trophy">🎉</span>
         <div class="end-title">所有歌曲播完了！</div>
         <div class="end-subtitle">感謝大家參與金曲猜歌王</div>
         <div class="end-actions">
-            <button class="btn-end-action btn-replay" onclick="replayGame()">🔁 再玩一次</button>
-            <button class="btn-end-action btn-reset-end" onclick="resetToSetup()">⚙️ 重設條件</button>
+            <button class="btn-end btn-replay" onclick="replayGame()">🔁 再玩一次</button>
+            <button class="btn-end btn-reset-end" onclick="resetToSetup()">⚙️ 重設條件</button>
         </div>
     </div>
 </div>
@@ -319,24 +378,24 @@
     let fullDatabase = [], gameQueue = [], originalQueue = [], history = [];
     let currentSong = null;
 
-    const loadingDiv     = document.getElementById("loading");
-    const setupArea      = document.getElementById("setupArea");
-    const gameArea       = document.getElementById("gameArea");
-    const endScreen      = document.getElementById("endScreen");
-    const startYearInput = document.getElementById("startYearInput");
-    const endYearInput   = document.getElementById("endYearInput");
-    const infoBox        = document.getElementById("infoBox");
-    const hiddenInfoDiv  = document.querySelector('.hidden-info');
-    const remainingText  = document.getElementById("remaining");
-    const songSelect     = document.getElementById("songSelect");
-    const searchInput    = document.getElementById("searchSong");
-    const playerWrap     = document.getElementById("playerWrap");
+    const loadingDiv        = document.getElementById("loading");
+    const setupArea         = document.getElementById("setupArea");
+    const gameArea          = document.getElementById("gameArea");
+    const endScreen         = document.getElementById("endScreen");
+    const startYearInput    = document.getElementById("startYearInput");
+    const endYearInput      = document.getElementById("endYearInput");
+    const infoBox           = document.getElementById("infoBox");
+    const hiddenInfoDiv     = document.querySelector('.hidden-info');
+    const remainingText     = document.getElementById("remaining");
+    const songSelect        = document.getElementById("songSelect");
+    const searchInput       = document.getElementById("searchSong");
+    const playerWrap        = document.getElementById("playerWrap");
     const playerPlaceholder = document.getElementById("playerPlaceholder");
+    const qrcodeDiv         = document.getElementById("qrcode");
+    const qrcodeLink        = document.getElementById("qrcodeLink");
 
     // ── YouTube IFrame API ──
-    let ytPlayer = null;
-    let ytReady = false;
-    let pendingVideoId = null;
+    let ytPlayer = null, ytReady = false, pendingVideoId = null;
 
     function extractVideoId(rawUrl) {
         try {
@@ -356,11 +415,10 @@
         const div = document.createElement('div');
         div.id = 'yt-player-el';
         playerWrap.appendChild(div);
-
         ytPlayer = new YT.Player('yt-player-el', {
             width: '100%', height: '100%',
             videoId: pendingVideoId || '',
-            playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+            playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
             events: {
                 onReady() {
                     if (pendingVideoId) { ytPlayer.loadVideoById(pendingVideoId); pendingVideoId = null; }
@@ -368,22 +426,16 @@
                 onStateChange(e) {
                     if (e.data === YT.PlayerState.PLAYING) {
                         playerPlaceholder.style.display = "none";
+                        document.querySelector('.qr-section').classList.remove('visible');
                     }
                 },
-                onError(e) {
+                onError() {
                     const song = currentSong;
                     playerPlaceholder.style.display = "flex";
                     playerPlaceholder.innerHTML = `
-                        <span style="font-size:2rem">🚫</span>
-                        <span style="color:var(--text-mid);font-size:0.85rem">此影片不允許嵌入</span>
-                        <a href="${song ? song.url : '#'}" target="_blank" style="
-                            margin-top:10px;padding:12px 24px;
-                            background:var(--accent);color:#fff;
-                            border-radius:12px;text-decoration:none;
-                            font-weight:700;font-size:1rem;
-                            box-shadow:0 4px 16px var(--accent-glow)">
-                            ▶ 開新分頁播放
-                        </a>`;
+                        <span style="font-size:1.8rem">🚫</span>
+                        <span style="color:var(--text-mid);font-size:0.82rem;text-align:center">此影片不允許嵌入<br>請掃描 QR Code 播放</span>`;
+                    document.querySelector('.qr-section').classList.add('visible');
                 }
             }
         });
@@ -401,6 +453,16 @@
         } else {
             pendingVideoId = videoId;
         }
+    }
+
+    function updateQR(url) {
+        qrcodeDiv.innerHTML = "";
+        qrcodeLink.href = url;
+        new QRCode(qrcodeDiv, {
+            text: url, width: 200, height: 200,
+            colorDark: "#000", colorLight: "#fff",
+            correctLevel: QRCode.CorrectLevel.L
+        });
     }
 
     async function initApp() {
@@ -471,7 +533,10 @@
 
         document.querySelectorAll('.btn-prev').forEach(b => b.disabled = history.length === 0);
 
-        loadVideo(extractVideoId(currentSong.url));
+        const cleanUrl = currentSong.url.trim();
+        document.querySelector('.qr-section').classList.remove('visible');
+        loadVideo(extractVideoId(cleanUrl));
+        updateQR(cleanUrl);
     }
 
     function filterSongList() {
@@ -530,7 +595,8 @@
         setupArea.style.display = "block";
         infoBox.classList.remove("revealed");
         if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
-        playerPlaceholder.style.display = "none";
+        qrcodeDiv.innerHTML = "";
+        qrcodeLink.href = "#";
     }
 
     initApp();
