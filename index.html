@@ -131,8 +131,29 @@
         .panel-answer  { grid-area: answer; display: flex; flex-direction: column; }
         .panel-control { grid-area: control; display: flex; flex-direction: column; gap: 12px; }
 
-        /* ── YouTube 播放器 ── */
-        .player-wrap {
+        /* ── 播放器模糊遮罩 ── */
+        .player-blur-wrap {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .player-blur-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            background: rgba(10,10,11,0.4);
+            border-radius: 16px;
+            transition: opacity 0.5s ease, backdrop-filter 0.5s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .player-blur-wrap.revealed::after {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+        }
             position: relative; width: 100%; padding-top: 56.25%;
             border-radius: 16px; overflow: hidden; background: #000;
             box-shadow: 0 8px 32px rgba(0,0,0,0.7);
@@ -310,11 +331,13 @@
 
             <!-- 左欄：播放器 + QR + 按鈕 -->
             <div class="panel-player">
+                <div class="player-blur-wrap" id="playerBlurWrap">
                 <div class="player-wrap" id="playerWrap">
                     <div class="player-placeholder" id="playerPlaceholder">
                         <span class="play-icon">▶️</span>
                         <span>等待出題...</span>
                     </div>
+                </div>
                 </div>
                 <div class="qr-section">
                     <a id="qrcodeLink" href="#" target="_blank">
@@ -375,7 +398,7 @@
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz8DV2RS3V9-q7XRDnFfnVb-ZZVS8pG8A__TXnJwd-vAh4M3pv1vPv4bZNj6nt2wDiY/exec";
 
-    let fullDatabase = [], gameQueue = [], originalQueue = [], history = [];
+    let fullDatabase = [], gameQueue = [], originalQueue = [], history = [], future = [];
     let currentSong = null;
 
     const loadingDiv        = document.getElementById("loading");
@@ -502,6 +525,7 @@
         if (gameQueue.length === 0) { alert(`在 ${start} 到 ${end} 年之間找不到歌曲。`); return; }
         originalQueue = [...gameQueue];
         history = [];
+        future = [];
         setupArea.style.display = "none";
         gameArea.style.display = "block";
         filterSongList();
@@ -511,6 +535,7 @@
     function replayGame() {
         gameQueue = [...originalQueue];
         history = [];
+        future = [];
         endScreen.style.display = "none";
         gameArea.style.display = "block";
         filterSongList();
@@ -523,6 +548,7 @@
         filterSongList();
 
         infoBox.classList.remove("revealed");
+        document.getElementById("playerBlurWrap").classList.remove("revealed");
         hiddenInfoDiv.style.transition = 'none';
         void hiddenInfoDiv.offsetWidth;
         setTimeout(() => { hiddenInfoDiv.style.transition = 'filter 0.5s ease, opacity 0.5s ease'; }, 50);
@@ -557,31 +583,41 @@
     }
 
     function nextSongRandom() {
-        if (gameQueue.length === 0) { showEndScreen(); return; }
-        if (currentSong) history.push(currentSong);
-        const idx = Math.floor(Math.random() * gameQueue.length);
-        currentSong = gameQueue.splice(idx, 1)[0];
-        renderCurrentSong();
+        if (future.length > 0) {
+            // 有前進歷史，照順序走
+            if (currentSong) history.push(currentSong);
+            currentSong = future.shift();
+            renderCurrentSong();
+        } else {
+            // 真正隨機
+            if (gameQueue.length === 0) { showEndScreen(); return; }
+            if (currentSong) history.push(currentSong);
+            const idx = Math.floor(Math.random() * gameQueue.length);
+            currentSong = gameQueue.splice(idx, 1)[0];
+            renderCurrentSong();
+        }
     }
 
     function playSelectedSong() {
         const idx = parseInt(songSelect.value);
         if (isNaN(idx) || songSelect.value === "") return;
         if (currentSong) history.push(currentSong);
+        future = [];
         currentSong = gameQueue.splice(idx, 1)[0];
         renderCurrentSong();
     }
 
     function prevSong() {
         if (history.length === 0) return;
-        if (currentSong) gameQueue.unshift(currentSong);
+        if (currentSong) future.unshift(currentSong);
         currentSong = history.pop();
         renderCurrentSong();
     }
 
     function reveal() {
         if (!currentSong) return;
-        infoBox.classList.toggle("revealed");
+        const isRevealed = infoBox.classList.toggle("revealed");
+        document.getElementById("playerBlurWrap").classList.toggle("revealed", isRevealed);
     }
 
     function showEndScreen() {
