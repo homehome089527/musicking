@@ -268,7 +268,73 @@
             font-size: 0.9rem; font-family: inherit; outline: none; cursor: pointer;
         }
 
-        .filter-label { font-size: 0.78rem; color: var(--text-sub); margin-bottom: 6px; letter-spacing: 0.5px; }
+        /* ── 開始畫面 ── */
+        .start-screen {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px 0 10px;
+            gap: 0;
+        }
+        .start-logo {
+            font-size: 5rem; line-height: 1;
+            animation: floatLogo 3s ease-in-out infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            font-weight: 900; color: var(--accent);
+            letter-spacing: 4px; text-align: center;
+            text-shadow: 0 0 40px var(--accent-glow);
+            animation: fadeSlideUp 0.6s ease both;
+            margin-bottom: 10px;
+        }
+        .start-sub {
+            color: var(--text-mid); font-size: 1rem;
+            text-align: center; letter-spacing: 1px;
+            animation: fadeSlideUp 0.6s 0.15s ease both;
+            margin-bottom: 36px;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .btn-start {
+            display: flex; align-items: center; gap: 10px;
+            justify-content: center;
+            width: 100%; max-width: 320px;
+            padding: 20px; margin: 0 auto;
+            background: var(--accent); color: #fff;
+            border: none; border-radius: 16px;
+            font-size: 1.2rem; font-weight: 900;
+            cursor: pointer; font-family: inherit;
+            box-shadow: 0 0 0 0 var(--accent-glow);
+            animation: fadeSlideUp 0.6s 0.3s ease both, pulse 2.5s 1s ease-in-out infinite;
+            letter-spacing: 2px; transition: filter 0.15s, transform 0.1s;
+        }
+        .btn-start:hover { filter: brightness(1.12); transform: scale(1.02); }
+        .btn-start:active { transform: scale(0.97); }
+        .btn-start-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: rgba(255,255,255,0.2); border-radius: 50%;
+            font-size: 0.9rem;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 24px var(--accent-glow); }
+            50% { box-shadow: 0 4px 48px rgba(232,0,28,0.5); }
+        }
+        .start-info {
+            margin-top: 24px; color: var(--text-sub);
+            font-size: 0.82rem; text-align: center;
+            animation: fadeSlideUp 0.6s 0.45s ease both;
+        }
+        .start-info span { color: var(--text-mid); font-weight: 700; }
+
+        /* ── Filter controls ── */
         .year-range-group, .keyword-group {
             display: flex; gap: 8px; align-items: center;
         }
@@ -295,6 +361,9 @@
         }
         .btn-apply:hover { filter: brightness(1.1); }
         .btn-apply:active { transform: scale(0.96); }
+
+        .filter-label { font-size: 0.78rem; color: var(--text-sub); margin-bottom: 6px; letter-spacing: 0.5px; }
+        .year-range-group, .keyword-group { display: flex; gap: 8px; align-items: center; }
 
         /* ── 狀態列 ── */
         .status-bar {
@@ -338,19 +407,18 @@
 
     <!-- Setup -->
     <div id="setupArea" style="display:none;">
-        <p class="setup-desc">請選擇出題年份範圍</p>
-        <div class="setup-box">
-            <div class="input-group">
-                <input type="number" id="startYearInput" placeholder="開始">
-                <span>至</span>
-                <input type="number" id="endYearInput" placeholder="結束">
-            </div>
-            <div class="db-info">
+        <div class="start-screen">
+            <div class="start-logo">🎵</div>
+            <div class="start-title">華語金曲猜歌王</div>
+            <div class="start-sub">考驗你對華語金曲的了解！</div>
+            <button class="btn-start" onclick="startGame()">
+                <span class="btn-start-icon">▶</span> 開始遊戲
+            </button>
+            <div class="start-info">
                 資料庫共 <span id="totalCount">0</span> 首 ·
-                年份 <span id="dbMinYear"></span>–<span id="dbMaxYear"></span>
+                <span id="dbMinYear"></span>–<span id="dbMaxYear"></span> 年
             </div>
         </div>
-        <button class="btn-start" onclick="startGame()">🚀 開始遊戲</button>
     </div>
 
     <!-- Game -->
@@ -563,17 +631,15 @@
     }
 
     function startGame() {
-        const start = parseInt(startYearInput.value);
-        const end   = parseInt(endYearInput.value);
-        if (isNaN(start) || isNaN(end) || start > end) { alert("請輸入有效的年份範圍！"); return; }
+        const years = fullDatabase.map(s => s.year);
+        const minYear = Math.min(...years);
+        const maxYear = Math.max(...years);
 
-        // 初始化遊戲內年份輸入
-        document.getElementById("gameStartYear").value = start;
-        document.getElementById("gameEndYear").value = end;
+        document.getElementById("gameStartYear").value = minYear;
+        document.getElementById("gameEndYear").value = maxYear;
         document.getElementById("filterKeyword").value = "";
 
-        gameQueue = fullDatabase.filter(s => s.year >= start && s.year <= end).sort((a,b) => a.year - b.year);
-        if (gameQueue.length === 0) { alert(`在 ${start} 到 ${end} 年之間找不到歌曲。`); return; }
+        gameQueue = [...fullDatabase].sort((a,b) => a.year - b.year);
         originalQueue = [...gameQueue];
         history = [];
         future = [];
