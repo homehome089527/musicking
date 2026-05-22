@@ -268,6 +268,34 @@
             font-size: 0.9rem; font-family: inherit; outline: none; cursor: pointer;
         }
 
+        .filter-label { font-size: 0.78rem; color: var(--text-sub); margin-bottom: 6px; letter-spacing: 0.5px; }
+        .year-range-group, .keyword-group {
+            display: flex; gap: 8px; align-items: center;
+        }
+        .year-input-sm {
+            background: var(--input-bg); border: 1px solid var(--border-bright);
+            color: var(--text); padding: 8px; border-radius: 8px;
+            width: 72px; text-align: center; font-size: 0.9rem; font-weight: 700;
+            font-family: inherit; outline: none; transition: border-color 0.2s;
+        }
+        .year-input-sm:focus { border-color: var(--accent); }
+        #filterKeyword {
+            flex: 1; padding: 8px 12px;
+            background: var(--input-bg); border: 1px solid var(--border-bright);
+            color: var(--text); border-radius: 8px; font-size: 0.9rem;
+            font-family: inherit; outline: none; transition: border-color 0.2s;
+        }
+        #filterKeyword:focus { border-color: var(--accent); }
+        .btn-apply {
+            padding: 8px 14px; border: none; border-radius: 8px;
+            background: var(--accent); color: #fff;
+            font-size: 0.85rem; font-weight: 700; cursor: pointer;
+            font-family: inherit; white-space: nowrap;
+            transition: filter 0.15s;
+        }
+        .btn-apply:hover { filter: brightness(1.1); }
+        .btn-apply:active { transform: scale(0.96); }
+
         /* ── 狀態列 ── */
         .status-bar {
             display: flex; align-items: center; justify-content: space-between;
@@ -366,9 +394,26 @@
             <!-- 右欄：控制台 + 狀態 -->
             <div class="panel-control">
                 <div class="control-panel">
+                    <!-- 年份範圍 -->
+                    <div class="filter-label">📅 年份範圍</div>
+                    <div class="year-range-group">
+                        <input type="number" id="gameStartYear" class="year-input-sm">
+                        <span style="color:var(--text-sub)">至</span>
+                        <input type="number" id="gameEndYear" class="year-input-sm">
+                        <button class="btn-apply" onclick="applyFilters()">套用</button>
+                    </div>
+                    <!-- 關鍵字過濾 -->
+                    <div class="filter-label" style="margin-top:10px;">🔎 限縮題目範圍</div>
+                    <div class="keyword-group">
+                        <input type="text" id="filterKeyword" placeholder="歌手、歌名關鍵字...">
+                        <button class="btn-apply" onclick="applyFilters()">套用</button>
+                    </div>
+                    <div id="filterInfo" style="font-size:0.78rem;color:var(--text-sub);margin-top:6px;"></div>
+                    <!-- 快速選歌 -->
+                    <div class="filter-label" style="margin-top:10px;">🎵 快速選歌</div>
                     <div class="search-group">
                         <span style="font-size:1.2rem;">🔍</span>
-                        <input type="text" id="searchSong" placeholder="搜尋歌名、歌手或年份..." oninput="filterSongList()">
+                        <input type="text" id="searchSong" placeholder="搜尋..." oninput="filterSongList()">
                     </div>
                     <select id="songSelect" onchange="playSelectedSong()">
                         <option value="">快速選歌...</option>
@@ -521,6 +566,12 @@
         const start = parseInt(startYearInput.value);
         const end   = parseInt(endYearInput.value);
         if (isNaN(start) || isNaN(end) || start > end) { alert("請輸入有效的年份範圍！"); return; }
+
+        // 初始化遊戲內年份輸入
+        document.getElementById("gameStartYear").value = start;
+        document.getElementById("gameEndYear").value = end;
+        document.getElementById("filterKeyword").value = "";
+
         gameQueue = fullDatabase.filter(s => s.year >= start && s.year <= end).sort((a,b) => a.year - b.year);
         if (gameQueue.length === 0) { alert(`在 ${start} 到 ${end} 年之間找不到歌曲。`); return; }
         originalQueue = [...gameQueue];
@@ -528,8 +579,48 @@
         future = [];
         setupArea.style.display = "none";
         gameArea.style.display = "block";
+        updateFilterInfo();
         filterSongList();
         nextSongRandom();
+    }
+
+    // ── 套用過濾器（年份 + 關鍵字） ──
+    function applyFilters() {
+        const start = parseInt(document.getElementById("gameStartYear").value);
+        const end   = parseInt(document.getElementById("gameEndYear").value);
+        const kw    = document.getElementById("filterKeyword").value.trim().toLowerCase();
+
+        if (isNaN(start) || isNaN(end) || start > end) { alert("請輸入有效的年份範圍！"); return; }
+
+        // 重建 gameQueue（不包含已播放的歷史）
+        const played = new Set([...history, ...future, currentSong].filter(Boolean).map(s => s.url));
+        gameQueue = fullDatabase.filter(s => {
+            if (s.year < start || s.year > end) return false;
+            if (played.has(s.url)) return false;
+            if (kw) {
+                const match = s.title.toLowerCase().includes(kw) ||
+                              s.artist.toLowerCase().includes(kw);
+                if (!match) return false;
+            }
+            return true;
+        }).sort((a,b) => a.year - b.year);
+
+        future = [];
+        updateFilterInfo();
+        filterSongList();
+        remainingText.textContent = gameQueue.length;
+    }
+
+    function updateFilterInfo() {
+        const kw = document.getElementById("filterKeyword").value.trim();
+        const start = document.getElementById("gameStartYear").value;
+        const end = document.getElementById("gameEndYear").value;
+        const info = document.getElementById("filterInfo");
+        if (kw) {
+            info.textContent = `篩選「${kw}」· ${start}–${end} 年 · 剩餘 ${gameQueue.length} 首`;
+        } else {
+            info.textContent = `${start}–${end} 年 · 剩餘 ${gameQueue.length} 首`;
+        }
     }
 
     function replayGame() {
