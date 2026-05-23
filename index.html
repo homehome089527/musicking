@@ -296,8 +296,21 @@
             color: var(--text-mid); font-size: 1rem;
             text-align: center; letter-spacing: 1px;
             animation: fadeSlideUp 0.6s 0.15s ease both;
-            margin-bottom: 36px;
+            margin-bottom: 20px;
         }
+        .start-rules {
+            display: flex; flex-direction: column; gap: 10px;
+            margin-bottom: 32px; width: 100%; max-width: 360px;
+            animation: fadeSlideUp 0.6s 0.25s ease both;
+        }
+        .rule-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-bright);
+            border-radius: 10px; padding: 12px 18px;
+            font-size: 0.9rem; color: var(--text-mid);
+            text-align: center; line-height: 1.5;
+        }
+        .rule-item strong { color: var(--accent); }
         @keyframes fadeSlideUp {
             from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -411,6 +424,10 @@
             <div class="start-logo">🎵</div>
             <div class="start-title">華語金曲猜歌王</div>
             <div class="start-sub">考驗你對華語金曲的了解！</div>
+            <div class="start-rules">
+                <div class="rule-item">🌐 請用瀏覽器開啟，並確認已登入 YouTube Premium</div>
+                <div class="rule-item">🎤 答題須同時答出<strong>歌手</strong>及<strong>歌名</strong></div>
+            </div>
             <button class="btn-start" onclick="startGame()">
                 <span class="btn-start-icon">▶</span> 開始遊戲
             </button>
