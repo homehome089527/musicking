@@ -347,6 +347,95 @@
         }
         .start-info span { color: var(--text-mid); font-weight: 700; }
 
+        .btn-feedback-open {
+            margin-top: 16px; background: transparent;
+            border: 1px solid var(--border-bright); color: var(--text-mid);
+            padding: 10px 24px; border-radius: 20px;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer;
+            font-family: inherit; transition: all 0.15s;
+            animation: fadeSlideUp 0.6s 0.55s ease both;
+        }
+        .btn-feedback-open:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none; position: fixed;
+            inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 100; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .modal-box {
+            background: var(--card-bg); border: 1px solid var(--border-bright);
+            border-radius: 24px; padding: 32px 28px;
+            width: 100%; max-width: 460px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .modal-title { font-size: 1.3rem; font-weight: 900; margin-bottom: 6px; }
+        .modal-desc { color: var(--text-sub); font-size: 0.88rem; margin-bottom: 20px; }
+
+        .feedback-types {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px; margin-bottom: 16px;
+        }
+        .type-btn {
+            padding: 10px; border: 1px solid var(--border-bright);
+            background: var(--panel-bg); color: var(--text-mid);
+            border-radius: 10px; font-size: 0.88rem; font-weight: 700;
+            cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .type-btn:hover { border-color: var(--accent); color: var(--text); }
+        .type-btn.active { border-color: var(--accent); background: rgba(232,0,28,0.12); color: var(--text); }
+
+        .feedback-textarea {
+            width: 100%; padding: 12px 14px;
+            background: var(--input-bg); border: 1px solid var(--border-bright);
+            color: var(--text); border-radius: 10px;
+            font-size: 0.95rem; font-family: inherit;
+            outline: none; resize: vertical; transition: border-color 0.2s;
+            margin-bottom: 10px;
+        }
+        .feedback-textarea:focus { border-color: var(--accent); }
+
+        .feedback-song-row {
+            display: flex; gap: 8px; margin-bottom: 12px;
+        }
+        .feedback-song-row input {
+            flex: 1; padding: 10px 12px;
+            background: var(--input-bg); border: 1px solid var(--border-bright);
+            color: var(--text); border-radius: 10px;
+            font-size: 0.88rem; font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+        .feedback-song-row input:focus { border-color: var(--accent); }
+
+        .feedback-msg { font-size: 0.85rem; min-height: 20px; margin-bottom: 8px; }
+        .feedback-msg.success { color: #00c96e; }
+        .feedback-msg.error { color: #ff4455; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+        .btn-modal-cancel {
+            flex: 1; padding: 13px; border: 1px solid var(--border-bright);
+            background: transparent; color: var(--text-mid);
+            border-radius: 12px; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .btn-modal-cancel:hover { background: var(--panel-bg); color: var(--text); }
+        .btn-modal-submit {
+            flex: 2; padding: 13px; border: none;
+            background: var(--accent); color: #fff;
+            border-radius: 12px; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; font-family: inherit;
+            box-shadow: 0 4px 16px var(--accent-glow);
+            transition: filter 0.15s;
+        }
+        .btn-modal-submit:hover { filter: brightness(1.1); }
+        .btn-modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
         /* ── Filter controls ── */
         .year-range-group, .keyword-group {
             display: flex; gap: 8px; align-items: center;
@@ -434,6 +523,36 @@
             <div class="start-info">
                 資料庫共 <span id="totalCount">0</span> 首 ·
                 <span id="dbMinYear"></span>–<span id="dbMaxYear"></span> 年
+            </div>
+            <button class="btn-feedback-open" onclick="openFeedback()">💬 填寫回饋</button>
+        </div>
+    </div>
+
+    <!-- 回饋 Modal -->
+    <div id="feedbackModal" class="modal-overlay" onclick="closeFeedbackOnBg(event)">
+        <div class="modal-box">
+            <div class="modal-title">💬 填寫回饋</div>
+            <div class="modal-desc">你的意見讓歌庫更完善！</div>
+
+            <div class="feedback-types">
+                <button class="type-btn active" onclick="selectType(this, '歌庫建議')">🎵 歌庫建議</button>
+                <button class="type-btn" onclick="selectType(this, '錯誤回報')">🐛 錯誤回報</button>
+                <button class="type-btn" onclick="selectType(this, '操作建議')">⚙️ 操作建議</button>
+                <button class="type-btn" onclick="selectType(this, '其他')">💡 其他</button>
+            </div>
+
+            <textarea id="feedbackContent" class="feedback-textarea" placeholder="請輸入你的回饋內容..." rows="4"></textarea>
+
+            <div id="feedbackSongRow" class="feedback-song-row">
+                <input type="text" id="feedbackSong" placeholder="相關歌名（選填）">
+                <input type="text" id="feedbackArtist" placeholder="歌手（選填）">
+            </div>
+
+            <div id="feedbackMsg" class="feedback-msg"></div>
+
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeFeedback()">取消</button>
+                <button class="btn-modal-submit" onclick="submitFeedback()">送出回饋</button>
             </div>
         </div>
     </div>
@@ -807,6 +926,69 @@
         if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
         qrcodeDiv.innerHTML = "";
         qrcodeLink.href = "#";
+    }
+
+    // ── 回饋功能 ──
+    let selectedFeedbackType = '歌庫建議';
+
+    function openFeedback() {
+        document.getElementById("feedbackModal").classList.add("open");
+        document.getElementById("feedbackContent").value = "";
+        document.getElementById("feedbackSong").value = "";
+        document.getElementById("feedbackArtist").value = "";
+        document.getElementById("feedbackMsg").textContent = "";
+        document.getElementById("feedbackMsg").className = "feedback-msg";
+    }
+
+    function closeFeedback() {
+        document.getElementById("feedbackModal").classList.remove("open");
+    }
+
+    function closeFeedbackOnBg(e) {
+        if (e.target === document.getElementById("feedbackModal")) closeFeedback();
+    }
+
+    function selectType(btn, type) {
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedFeedbackType = type;
+    }
+
+    async function submitFeedback() {
+        const content = document.getElementById("feedbackContent").value.trim();
+        if (!content) {
+            const msg = document.getElementById("feedbackMsg");
+            msg.textContent = "請輸入回饋內容！";
+            msg.className = "feedback-msg error";
+            return;
+        }
+
+        const btn = document.querySelector('.btn-modal-submit');
+        btn.disabled = true;
+        btn.textContent = "送出中...";
+
+        try {
+            await fetch(GAS_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    type: selectedFeedbackType,
+                    content,
+                    song: document.getElementById("feedbackSong").value.trim(),
+                    artist: document.getElementById("feedbackArtist").value.trim()
+                })
+            });
+            const msg = document.getElementById("feedbackMsg");
+            msg.textContent = "✅ 感謝你的回饋！";
+            msg.className = "feedback-msg success";
+            setTimeout(closeFeedback, 1500);
+        } catch(e) {
+            const msg = document.getElementById("feedbackMsg");
+            msg.textContent = "❌ 送出失敗，請稍後再試";
+            msg.className = "feedback-msg error";
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "送出回饋";
+        }
     }
 
     initApp();
